@@ -54,7 +54,8 @@ import {
   MapPin,
   CheckCircle,
   XCircle,
-  Star
+  Star,
+  Key
 } from 'lucide-react';
 import { useAuthStore } from './stores';
 import { villageService, postService, eventService, membershipService } from './services';
@@ -1440,7 +1441,6 @@ const VillageSwitcherDrawer = ({
   activeVillageId,
   onSelectVillage,
   onGoHome,
-  onCreateClick,
   onLogout
 }: {
   isOpen: boolean,
@@ -1449,7 +1449,6 @@ const VillageSwitcherDrawer = ({
   activeVillageId: string | null,
   onSelectVillage: (id: string) => void,
   onGoHome: () => void,
-  onCreateClick: () => void,
   onLogout: () => void
 }) => {
   if (!isOpen) return null;
@@ -1499,13 +1498,13 @@ const VillageSwitcherDrawer = ({
             ))}
 
             <button
-              onClick={() => { onCreateClick(); onClose(); }}
+              onClick={() => { onGoHome(); onClose(); }}
               className="w-full flex items-center gap-3 p-2 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white border border-dashed border-gray-600 hover:border-gray-400 mt-2"
             >
                <div className="w-10 h-10 rounded-lg flex items-center justify-center border border-current">
                  <Plus size={20} />
                </div>
-               <span className="font-medium text-sm">Create Village</span>
+               <span className="font-medium text-sm">Join Village</span>
             </button>
           </div>
         </div>
@@ -1534,7 +1533,6 @@ const Sidebar = ({
   onSelectVillage,
   onGoHome,
   onOpenPassport,
-  onCreateClick,
   onLogout
 }: {
   villages: Village[],
@@ -1542,7 +1540,6 @@ const Sidebar = ({
   onSelectVillage: (id: string) => void,
   onGoHome: () => void,
   onOpenPassport: () => void,
-  onCreateClick: () => void,
   onLogout: () => void
 }) => (
   <div className="hidden lg:flex w-20 flex-col items-center py-6 bg-secondary text-white h-screen fixed left-0 top-0 z-50 shadow-xl">
@@ -1584,11 +1581,14 @@ const Sidebar = ({
         </button>
       ))}
 
-      <button 
-        onClick={onCreateClick}
-        className="w-full aspect-square rounded-2xl flex items-center justify-center bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-all border border-dashed border-gray-600 hover:border-gray-400"
+      <button
+        onClick={onGoHome}
+        className="w-full aspect-square rounded-2xl flex items-center justify-center bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-all border border-dashed border-gray-600 hover:border-gray-400 group relative"
       >
         <Plus size={22} />
+        <div className="absolute left-16 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+          Join Village
+        </div>
       </button>
     </div>
 
@@ -1926,16 +1926,142 @@ const CreateVillageModal = ({ isOpen, onClose, onCreate }: { isOpen: boolean, on
   );
 };
 
+// --- Join By Code Modal ---
+
+const JoinByCodeModal = ({
+  isOpen,
+  onClose,
+  onJoin
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onJoin: (villageId: string, inviteCode: string) => Promise<void>;
+}) => {
+  const { t } = useI18n();
+  const [villageId, setVillageId] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async () => {
+    if (!villageId.trim()) {
+      setError('Please enter a village ID');
+      return;
+    }
+    if (!inviteCode.trim()) {
+      setError('Please enter an invite code');
+      return;
+    }
+
+    setIsJoining(true);
+    setError('');
+    try {
+      await onJoin(villageId.trim(), inviteCode.trim().toUpperCase());
+      // Reset form and close on success
+      setVillageId('');
+      setInviteCode('');
+      onClose();
+    } catch (err: any) {
+      const message = err?.response?.data?.message;
+      if (Array.isArray(message)) {
+        setError(message.join(', '));
+      } else {
+        setError(message || err?.message || 'Failed to join village');
+      }
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const handleClose = () => {
+    setVillageId('');
+    setInviteCode('');
+    setError('');
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl relative">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-secondary flex items-center gap-2">
+              <Key size={20} className="text-primary" />
+              {t('joinByCode')}
+            </h2>
+            <button onClick={handleClose} className="p-2 hover:bg-gray-100 rounded-full">
+              <X size={20} />
+            </button>
+          </div>
+
+          <p className="text-sm text-gray-500 mb-6">{t('joinVillageHint')}</p>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('villageId')}</label>
+              <input
+                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none font-mono"
+                placeholder="e.g. abc123-def456..."
+                value={villageId}
+                onChange={(e) => setVillageId(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('enterInviteCode')}</label>
+              <input
+                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none font-mono uppercase tracking-widest text-center text-lg"
+                placeholder="ABC123"
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                maxLength={10}
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
+              <AlertCircle size={16} />
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={handleClose}
+              disabled={isJoining}
+              className="flex-1 px-4 py-3 text-gray-600 font-medium bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50"
+            >
+              {t('cancel')}
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isJoining || !villageId.trim() || !inviteCode.trim()}
+              className="flex-1 px-4 py-3 bg-primary text-white font-bold rounded-xl hover:bg-opacity-90 shadow-lg shadow-primary/30 transition-all transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isJoining && <Loader2 size={16} className="animate-spin" />}
+              {isJoining ? t('joining') : t('join')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- Home/Discovery View ---
 
-const HomeView = ({ 
+const HomeView = ({
   onJoinVillage,
   villages,
-  onCreateClick
-}: { 
+  onCreateClick,
+  onJoinByCode
+}: {
   onJoinVillage: (id: string) => void,
   villages: Village[],
-  onCreateClick: () => void
+  onCreateClick: () => void,
+  onJoinByCode: () => void
 }) => {
   const [filter, setFilter] = useState('All');
   const categories = ['All', 'Interest', 'Professional', 'Lifestyle', 'Technology'];
@@ -1948,9 +2074,27 @@ const HomeView = ({
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 lg:px-8 py-6 lg:py-12 pb-8 lg:pb-12">
-      <div className="mb-8 animate-fade-in">
+      <div className="mb-6 animate-fade-in">
         <h1 className="text-3xl font-bold text-secondary mb-2">Explore the World</h1>
         <p className="text-gray-500">Find your tribe among {visibleVillages.length} active communities.</p>
+      </div>
+
+      {/* Quick Actions - Always visible at top */}
+      <div className="flex gap-3 mb-6 animate-fade-in">
+        <button
+          onClick={onJoinByCode}
+          className="flex items-center gap-2 px-4 py-2.5 bg-secondary text-white rounded-xl font-medium shadow-md hover:shadow-lg hover:scale-105 transition-all"
+        >
+          <Key size={18} />
+          <span>Join by Code</span>
+        </button>
+        <button
+          onClick={onCreateClick}
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl font-medium shadow-md hover:shadow-lg hover:scale-105 transition-all"
+        >
+          <Plus size={18} />
+          <span>Create Village</span>
+        </button>
       </div>
 
       {/* Categories */}
@@ -2007,19 +2151,6 @@ const HomeView = ({
           </div>
         ))}
         
-        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-5 border-2 border-dashed border-primary/20 flex flex-col items-center justify-center text-center h-full min-h-[300px]">
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-primary shadow-sm mb-4">
-            <Plus size={32} />
-          </div>
-          <h3 className="text-lg font-bold text-secondary mb-2">Create Your Own</h3>
-          <p className="text-gray-500 text-sm mb-6 max-w-[200px]">Build a customized community with its own economy and rules.</p>
-          <button 
-            onClick={onCreateClick}
-            className="px-6 py-2 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
-          >
-            Get Started
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -3159,6 +3290,7 @@ const App = () => {
 
   // App State
   const [villages, setVillages] = useState<Village[]>([]);
+  const [myVillageIds, setMyVillageIds] = useState<Set<string>>(new Set());
   const [posts, setPosts] = useState<Post[]>([]);
   const [activeVillageId, setActiveVillageId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('square');
@@ -3170,6 +3302,7 @@ const App = () => {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isPassportOpen, setIsPassportOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isJoinByCodeModalOpen, setIsJoinByCodeModalOpen] = useState(false);
 
   // Check auth on mount
   useEffect(() => {
@@ -3222,9 +3355,26 @@ const App = () => {
     }
   }, [isAuthenticated]);
 
+  // Load user's memberships when authenticated
+  const loadMyMemberships = useCallback(async () => {
+    if (!isAuthenticated) {
+      setMyVillageIds(new Set());
+      return;
+    }
+    try {
+      const memberships = await membershipService.getMyMemberships();
+      const villageIds = new Set(memberships.map(m => m.villageId));
+      setMyVillageIds(villageIds);
+    } catch (err) {
+      console.error('Failed to load memberships:', err);
+      setMyVillageIds(new Set());
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     loadVillages();
-  }, [loadVillages]);
+    loadMyMemberships();
+  }, [loadVillages, loadMyMemberships]);
 
   // Load posts when active village changes
   const loadPosts = useCallback(async () => {
@@ -3372,7 +3522,14 @@ const App = () => {
     if (!confirmed) return;
 
     try {
-      await villageService.leave(activeVillageId);
+      const villageIdToLeave = activeVillageId;
+      await villageService.leave(villageIdToLeave);
+      // Remove from myVillageIds
+      setMyVillageIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(villageIdToLeave);
+        return newSet;
+      });
       // Navigate back to village list
       setActiveVillageId(null);
       // Refresh villages list
@@ -3561,9 +3718,8 @@ const App = () => {
   };
 
   const activeVillage = villages.find(v => v.id === activeVillageId);
-  const myVillages = villages.filter(v => 
-     isAuthenticated && (v.id === activeVillageId || !v.isPrivate)
-  );
+  // Only show villages where user has a membership
+  const myVillages = villages.filter(v => myVillageIds.has(v.id));
 
   const handleSelectVillage = async (id: string) => {
     setActiveVillageId(id);
@@ -3574,6 +3730,7 @@ const App = () => {
     if (user?.id) {
       try {
         const membership = await membershipService.getMember(id, user.id);
+        // User is already a member
         handleUpdateLocalProfile(id, {
           nickname: membership.nickname || userProfile.global.name,
           bio: membership.bio || 'New Villager',
@@ -3590,19 +3747,49 @@ const App = () => {
           },
         });
       } catch (err) {
-        // User might not be a member yet, set default role
-        handleUpdateLocalProfile(id, {
-          nickname: userProfile.global.name,
-          bio: 'New Villager',
-          role: 'villager',
-          joinedAt: new Date().toISOString().split('T')[0],
-          privacy: {
-            showEmail: true,
-            showPhone: false,
-            showLocation: true,
-            showSocials: true,
-          },
-        });
+        // User is not a member yet, try to join the village
+        const tryJoinVillage = async (inviteCode?: string) => {
+          try {
+            await villageService.join(id, inviteCode ? { inviteCode } : undefined);
+            // Successfully joined, add to myVillageIds
+            setMyVillageIds(prev => new Set([...prev, id]));
+            // Fetch the new membership
+            const membership = await membershipService.getMember(id, user.id);
+            handleUpdateLocalProfile(id, {
+              nickname: membership.nickname || userProfile.global.name,
+              bio: membership.bio || 'New Villager',
+              role: membership.role || 'villager',
+              avatar: membership.localAvatar,
+              joinedAt: membership.joinedAt
+                ? new Date(membership.joinedAt).toISOString().split('T')[0]
+                : new Date().toISOString().split('T')[0],
+              privacy: membership.privacy || {
+                showEmail: true,
+                showPhone: false,
+                showLocation: true,
+                showSocials: true,
+              },
+            });
+            return true;
+          } catch (joinErr: any) {
+            const errorMessage = joinErr?.response?.data?.message || '';
+            // Check if it requires invite code
+            if (errorMessage.includes('invite code') || errorMessage.includes('Invalid invite')) {
+              const code = window.prompt('This is a private village. Please enter the invite code:');
+              if (code) {
+                return tryJoinVillage(code);
+              } else {
+                setActiveVillageId(null);
+                return false;
+              }
+            }
+            console.error('Failed to join village:', joinErr);
+            alert(errorMessage || 'Failed to join this village');
+            setActiveVillageId(null);
+            return false;
+          }
+        };
+        await tryJoinVillage();
       }
     }
   };
@@ -3613,6 +3800,20 @@ const App = () => {
 
   const handleGoHome = () => {
     setActiveVillageId(null);
+  };
+
+  // Handle joining a village by invite code (callback for modal)
+  const handleJoinByCode = async (villageId: string, inviteCode: string) => {
+    // Try to join with the invite code
+    await villageService.join(villageId, { inviteCode });
+
+    // Successfully joined
+    setMyVillageIds(prev => new Set([...prev, villageId]));
+
+    // Reload villages and select it
+    await loadVillages();
+    await loadMyMemberships();
+    setActiveVillageId(villageId);
   };
 
   const handleCreateVillage = async (data: any) => {
@@ -3642,6 +3843,8 @@ const App = () => {
       };
 
       setVillages(prev => [...prev, newVillage]);
+      // Add to user's village IDs
+      setMyVillageIds(prev => new Set([...prev, newVillage.id]));
 
       // Fetch membership from backend to get correct role
       if (user?.id) {
@@ -3707,7 +3910,6 @@ const App = () => {
         onSelectVillage={handleSelectVillage}
         onGoHome={handleGoHome}
         onOpenPassport={() => setIsPassportOpen(true)}
-        onCreateClick={() => setIsCreateModalOpen(true)}
         onLogout={logout}
       />
 
@@ -3719,7 +3921,6 @@ const App = () => {
         activeVillageId={activeVillageId}
         onSelectVillage={handleSelectVillage}
         onGoHome={handleGoHome}
-        onCreateClick={() => setIsCreateModalOpen(true)}
         onLogout={logout}
       />
 
@@ -3757,10 +3958,11 @@ const App = () => {
           </>
         ) : (
           <div className="lg:pl-20 min-h-screen pt-mobile-header lg:pt-0">
-            <HomeView 
-              onJoinVillage={handleSelectVillage} 
+            <HomeView
+              onJoinVillage={handleSelectVillage}
               villages={villages}
               onCreateClick={() => setIsCreateModalOpen(true)}
+              onJoinByCode={() => setIsJoinByCodeModalOpen(true)}
             />
           </div>
         )}
@@ -3775,6 +3977,11 @@ const App = () => {
         onUpdateLocalProfile={handleUpdateLocalProfile}
       />
       <CreateVillageModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onCreate={handleCreateVillage} />
+      <JoinByCodeModal
+        isOpen={isJoinByCodeModalOpen}
+        onClose={() => setIsJoinByCodeModalOpen(false)}
+        onJoin={handleJoinByCode}
+      />
 
       {/* Comments Modal */}
       {selectedPostForComment && (

@@ -42,7 +42,30 @@ export interface UpdateRoleDto {
   role: 'chief' | 'core_member' | 'villager';
 }
 
+export interface MyMembership {
+  id: string;
+  villageId: string;
+  role: string;
+  nickname: string;
+  bio: string;
+  balance: number;
+  joinedAt: string;
+  village: {
+    id: string;
+    name: string;
+    slug: string;
+    icon: string;
+    category: string;
+    memberCount: number;
+  };
+}
+
 export const membershipService = {
+  async getMyMemberships(): Promise<MyMembership[]> {
+    const response = await api.get<ApiResponse<MyMembership[]>>('/users/me/memberships');
+    return response.data.data;
+  },
+
   async getMembers(
     villageId: string,
     page = 1,

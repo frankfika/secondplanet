@@ -30,7 +30,15 @@ const en: Dict = {
   hidden: 'Hidden',
   language: 'Language',
   english: 'English',
-  chinese: '中文'
+  chinese: '中文',
+  joinByCode: 'Join by Code',
+  villageId: 'Village ID',
+  enterInviteCode: 'Invite Code',
+  joinVillageHint: 'Ask your friend for the village ID and invite code',
+  joining: 'Joining...',
+  join: 'Join',
+  cancel: 'Cancel',
+  createVillage: 'Create Village'
 }
 
 const zh: Dict = {
@@ -59,7 +67,15 @@ const zh: Dict = {
   hidden: '隐藏',
   language: '语言',
   english: 'English',
-  chinese: '中文'
+  chinese: '中文',
+  joinByCode: '邀请码加入',
+  villageId: '村落ID',
+  enterInviteCode: '邀请码',
+  joinVillageHint: '向朋友索要村落ID和邀请码',
+  joining: '加入中...',
+  join: '加入',
+  cancel: '取消',
+  createVillage: '创建村落'
 }
 
 const DICTS: Record<Lang, Dict> = { en, zh }
