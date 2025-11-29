@@ -1,10 +1,16 @@
 {
   "version": 2,
-  "buildCommand": "pnpm --filter @secondplanet/server db:generate && pnpm --filter @secondplanet/web build",
-  "outputDirectory": "packages/web/dist",
   "installCommand": "npm install -g pnpm@9.0.0 && pnpm install --no-frozen-lockfile --prod=false",
   "framework": null,
   "builds": [
+    {
+      "src": "packages/web/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "packages/web/dist",
+        "buildCommand": "pnpm --filter @secondplanet/web build"
+      }
+    },
     {
       "src": "api/index.ts",
       "use": "@vercel/node",
