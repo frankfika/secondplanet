@@ -25,14 +25,13 @@ secondplanet（第二星球）是一个去中心化社区平台，用户可以�
 ### 后端
 - **NestJS** - Node.js 框架
 - **Prisma** - ORM
-- **PostgreSQL** (Neon) - 数据库
+ - **PostgreSQL** - 数据库
 - **JWT** - 认证
 - **Passport.js** - 身份验证
 
 ### 基础设施
 - **pnpm** - 包管理器
 - **Turborepo** - Monorepo 构建系统
-- **Vercel** - 部署平台
 
 ## 项目结构
 
@@ -56,7 +55,7 @@ secondplanet/
 │   │       ├── services/
 │   │       └── hooks/
 │   └── core/            # 共享类型和工具
-└── api/                 # Vercel Serverless 入口
+└──
 ```
 
 ## 快速开始
@@ -99,6 +98,16 @@ npx prisma db push
 npx prisma db seed
 ```
 
+### 本地开发（PostgreSQL）
+
+- 安装并启动 PostgreSQL（macOS 示例）：
+  - 使用 Homebrew：`brew install postgresql@16 && brew services start postgresql@16`
+  - 创建数据库：`createdb secondplanet` 或 `psql -U postgres -c "CREATE DATABASE secondplanet;"`
+- 配置环境：复制 `apps/server/.env.example` 为 `apps/server/.env`，设置 `DATABASE_URL`
+  - 示例：`postgresql://postgres@localhost:5432/secondplanet?schema=public`
+- 同步 Schema：在仓库根目录运行 `pnpm -w run db:push`
+- 可选初始化数据：`cd apps/server && pnpm run db:seed`
+
 ### 启动开发服务器
 
 ```bash
@@ -110,16 +119,7 @@ pnpm dev:web     # 前端 http://localhost:5173
 pnpm dev:server  # 后端 http://localhost:3001
 ```
 
-## 部署
-
-项目已配置 Vercel 部署：
-
-1. 在 Vercel 导入 GitHub 仓库
-2. 配置环境变量（DATABASE_URL, JWT_SECRET 等）
-3. 部署
-
-详见 [vercel.json](./vercel.json) 配置。
-
+ 
 ## API 文档
 
 主要接口：

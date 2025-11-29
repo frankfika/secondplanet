@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "nest start --watch",
     "build": "prisma generate && nest build",
-    "vercel-build": "prisma generate",
     "start": "node dist/main",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -39,11 +38,8 @@
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@types/bcrypt": "^5.0.0",
-    "@types/express": "^5.0.5",
     "@types/node": "^22.0.0",
     "@types/passport-jwt": "^4.0.0",
-    "@vercel/node": "^5.5.13",
-    "express": "^5.1.0",
     "prisma": "^5.0.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.8.2"

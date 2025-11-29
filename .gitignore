@@ -11,6 +11,12 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+**/.env*
+**/*.db
+**/*.db-journal
+**/uploads/
+.turbo
 
 # Editor directories and files
 .vscode/*

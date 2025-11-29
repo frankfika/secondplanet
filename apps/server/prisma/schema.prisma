@@ -140,7 +140,7 @@ model Post {
   comments      Comment[]
   likes         Like[]
 
-  @@index([villageId, createdAt(sort: Desc)])
+  @@index([villageId, createdAt])
   @@index([authorId])
 }
 
@@ -290,7 +290,7 @@ model Notification {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
-  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, createdAt])
 }
 
 model SmsCode {
