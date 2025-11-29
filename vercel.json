@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "pnpm install --include-dev --no-frozen-lockfile && (pnpm dlx prisma generate --schema=apps/server/prisma/schema.prisma || pnpm dlx prisma generate --schema=../apps/server/prisma/schema.prisma) && pnpm --filter @gv/web build",
+  "buildCommand": "(pnpm dlx prisma generate --schema=apps/server/prisma/schema.prisma || pnpm dlx prisma generate --schema=../apps/server/prisma/schema.prisma) && pnpm --filter @gv/web build",
   "outputDirectory": "packages/web/dist",
-  "installCommand": "npm install -g pnpm@9.0.0 && pnpm install --include-dev --no-frozen-lockfile",
+  "installCommand": "npm install -g pnpm@9.0.0 && pnpm install --no-frozen-lockfile --prod=false",
   "framework": null,
   "builds": [
     {
