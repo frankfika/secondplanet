@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "npm install -g pnpm@9.0.0 && pnpm install --no-frozen-lockfile",
-  "buildCommand": "pnpm --filter @secondplanet/server db:generate && pnpm --filter @secondplanet/web build",
+  "buildCommand": "cd apps/server && npx prisma generate && cd ../.. && pnpm --filter @secondplanet/web build",
   "outputDirectory": "packages/web/dist",
   "framework": null,
   "functions": {
