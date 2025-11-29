@@ -1,14 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
   background-color: #F4F1DE; /* Sand background */
-  overflow: hidden;
+  overflow-x: hidden; /* Prevent horizontal scroll only */
 }
 
 #root {
-  height: 100vh; /* Fallback */
-  height: 100dvh; /* Mobile fix */
+  min-height: 100vh; /* Fallback */
+  min-height: 100dvh; /* Mobile fix */
   width: 100vw;
 }
 
@@ -52,12 +55,21 @@ body {
   to { transform: translateY(0); opacity: 1; }
 }
 
+@keyframes slideRight {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
 .animate-slide-up {
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-right {
+  animation: slideRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .glass-panel {
