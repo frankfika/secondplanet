@@ -13,6 +13,7 @@
     "db:push": "turbo db:push"
   },
   "devDependencies": {
+    "@vercel/node": "^5.5.13",
     "turbo": "^2.0.0",
     "typescript": "~5.8.2"
   }

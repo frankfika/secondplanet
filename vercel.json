@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm install && cd apps/server && npx prisma generate && cd ../../packages/web && pnpm build",
+  "outputDirectory": "packages/web/dist",
+  "installCommand": "npm install -g pnpm && pnpm install",
+  "framework": null,
+  "builds": [
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "includeFiles": [
+          "apps/server/src/**",
+          "apps/server/prisma/**",
+          "packages/core/**"
+        ]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.ts"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/index.ts": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  }
+}
