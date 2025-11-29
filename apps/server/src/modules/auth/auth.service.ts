@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { generateGradientAvatar } from '../../utils/avatar.util';
 
 @Injectable()
 export class AuthService {
@@ -30,12 +31,17 @@ export class AuthService {
     // Hash password
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
+    // Generate gradient avatar based on email or name
+    const avatarSeed = dto.email || dto.name;
+    const avatar = generateGradientAvatar(avatarSeed);
+
     // Create user
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
         passwordHash,
         name: dto.name,
+        avatar,
       },
     });
 

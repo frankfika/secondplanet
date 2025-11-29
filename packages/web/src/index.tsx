@@ -55,7 +55,7 @@ import {
   Star
 } from 'lucide-react';
 import { useAuthStore } from './stores';
-import { villageService, postService, eventService } from './services';
+import { villageService, postService, eventService, membershipService } from './services';
 
 // --- Types ---
 
@@ -3242,14 +3242,29 @@ const App = () => {
 
       setVillages(prev => [...prev, newVillage]);
 
-      // Create Chief profile for the creator
-      handleUpdateLocalProfile(newVillage.id, {
-        nickname: userProfile.global.name,
-        role: 'Chief',
-        bio: 'Founder of this village',
-        joinedAt: new Date().toISOString().split('T')[0],
-        privacy: { showEmail: true, showPhone: true, showLocation: true, showSocials: true }
-      });
+      // Fetch membership from backend to get correct role
+      if (user?.id) {
+        try {
+          const membership = await membershipService.getMember(newVillage.id, user.id);
+          handleUpdateLocalProfile(newVillage.id, {
+            nickname: membership.nickname || userProfile.global.name,
+            role: membership.role === 'chief' ? 'Chief' : membership.role === 'core_member' ? 'Core Member' : 'Villager',
+            bio: membership.bio || 'Founder of this village',
+            joinedAt: new Date(membership.joinedAt).toISOString().split('T')[0],
+            privacy: membership.privacy || { showEmail: true, showPhone: true, showLocation: true, showSocials: true }
+          });
+        } catch (err) {
+          console.error('Failed to fetch membership:', err);
+          // Fallback to default Chief role
+          handleUpdateLocalProfile(newVillage.id, {
+            nickname: userProfile.global.name,
+            role: 'Chief',
+            bio: 'Founder of this village',
+            joinedAt: new Date().toISOString().split('T')[0],
+            privacy: { showEmail: true, showPhone: true, showLocation: true, showSocials: true }
+          });
+        }
+      }
 
       // Close modal and navigate to new village
       setIsCreateModalOpen(false);
