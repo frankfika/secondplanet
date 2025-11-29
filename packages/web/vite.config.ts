@@ -16,8 +16,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
-      outDir: path.resolve(__dirname, '../../dist'),
-      emptyDir: true,
+      outDir: '../../dist',
+      emptyOutDir: true,
     },
     plugins: [react()],
     define: {
