@@ -18,7 +18,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@gv/core": ["packages/core/src"]
+      "@secondplanet/core": ["packages/core/src"]
     }
   },
   "include": ["api/**/*", "apps/server/src/**/*"],

@@ -1,5 +1,6 @@
 import './styles.css';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { I18nProvider, useI18n } from './i18n';
 import { createRoot } from 'react-dom/client';
 import {
   Home,
@@ -904,7 +905,7 @@ const FeedPost: React.FC<FeedPostProps> = ({ post, onLike, onComment }) => {
     {isAdmin && (
       <div className="flex items-center gap-1.5 mb-3 text-amber-600 text-xs font-medium">
         <Crown size={14} />
-        <span>Official Announcement</span>
+        <span>{useI18n().t('officialAnnouncement')}</span>
       </div>
     )}
     <div className="flex items-start justify-between mb-3">
@@ -1402,11 +1403,12 @@ const MobileHeader = ({
 }
 
 const MobileBottomNav = ({ activeTab, onTabChange }: { activeTab: string, onTabChange: (tab: string) => void }) => {
+  const { t } = useI18n();
   const tabs = [
-    { id: 'square', icon: MessageSquare, label: 'Square' },
-    { id: 'citizens', icon: Users, label: 'Citizens' },
-    { id: 'events', icon: Calendar, label: 'Events' },
-    { id: 'townhall', icon: Gavel, label: 'Town Hall' },
+    { id: 'square', icon: MessageSquare, label: t('square') },
+    { id: 'citizens', icon: Users, label: t('citizens') },
+    { id: 'events', icon: Calendar, label: t('events') },
+    { id: 'townhall', icon: Gavel, label: t('townHall') },
   ];
 
   return (
@@ -1454,7 +1456,7 @@ const VillageSwitcherDrawer = ({
       <div className="absolute top-0 left-0 bottom-0 w-[280px] bg-secondary text-white shadow-2xl animate-slide-right flex flex-col">
         <div className="p-6 flex-1 overflow-hidden flex flex-col">
           <h2 className="text-xl font-bold flex items-center gap-2 mb-6">
-            <Globe className="text-primary" /> Global Village
+            <Globe className="text-primary" /> {useI18n().t('appName')}
           </h2>
 
           <button
@@ -1466,10 +1468,10 @@ const VillageSwitcherDrawer = ({
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${!activeVillageId ? 'bg-white/20' : 'bg-white/5'}`}>
               <Search size={20} />
             </div>
-            <span className="font-medium">Discover</span>
+            <span className="font-medium">{useI18n().t('discover')}</span>
           </button>
 
-          <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">My Villages</div>
+          <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">{useI18n().t('myVillages')}</div>
           <div className="space-y-2 overflow-y-auto flex-1 pr-2 custom-scrollbar">
             {villages.map(village => (
               <button
@@ -2133,19 +2135,19 @@ const TownHall = ({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <TrendingUp size={20} className="text-primary" /> Data Center
+          <TrendingUp size={20} className="text-primary" /> {useI18n().t('dataCenter')}
         </h3>
         <div className="space-y-4">
           <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-             <span className="text-gray-500 text-sm">Total Citizens</span>
+             <span className="text-gray-500 text-sm">{useI18n().t('totalCitizens')}</span>
              <span className="font-mono font-bold text-xl">{village.members}</span>
           </div>
            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-             <span className="text-gray-500 text-sm">Active Today</span>
+             <span className="text-gray-500 text-sm">{useI18n().t('activeToday')}</span>
              <span className="font-mono font-bold text-xl text-green-600">{Math.floor(village.members * 0.15)}</span>
           </div>
           <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-             <span className="text-gray-500 text-sm">Treasury</span>
+             <span className="text-gray-500 text-sm">{useI18n().t('treasury')}</span>
              <span className="font-mono font-bold text-xl text-yellow-600">{village.currencySymbol} 84.5k</span>
           </div>
         </div>
@@ -2153,7 +2155,7 @@ const TownHall = ({
 
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
          <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <ShieldCheck size={20} className="text-primary" /> Constitution
+          <ShieldCheck size={20} className="text-primary" /> {useI18n().t('constitution')}
         </h3>
         <div className="text-sm text-gray-600 space-y-2 bg-sand/30 p-4 rounded-xl border border-sand">
           <p>1. Be respectful to all villagers.</p>
@@ -2161,7 +2163,7 @@ const TownHall = ({
           <p>3. Contribute to the economy to earn {village.currencyName}.</p>
         </div>
         {isOwner && (
-          <button className="mt-4 text-primary text-sm font-bold hover:underline">Edit Rules</button>
+          <button className="mt-4 text-primary text-sm font-bold hover:underline">{useI18n().t('editRules')}</button>
         )}
       </div>
     </div>
@@ -2169,13 +2171,13 @@ const TownHall = ({
     {isOwner ? (
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
          <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <Settings size={20} className="text-gray-500" /> Admin Settings
+            <Settings size={20} className="text-gray-500" /> {useI18n().t('adminSettings')}
           </h3>
          
          <div className="flex items-center justify-between py-4 border-b border-gray-100">
            <div>
-             <div className="font-medium text-gray-800">Private Village</div>
-             <div className="text-xs text-gray-500">Only invited members can join</div>
+             <div className="font-medium text-gray-800">{useI18n().t('privateVillage')}</div>
+             <div className="text-xs text-gray-500">{useI18n().t('privateVillageHint')}</div>
            </div>
            <div 
               onClick={togglePrivacy}
@@ -2188,7 +2190,7 @@ const TownHall = ({
          {village.isPrivate && (
            <div className="mt-4 p-4 bg-gray-50 rounded-xl flex items-center justify-between animate-fade-in">
              <div>
-               <div className="text-xs font-bold text-gray-400 uppercase">Invite Code</div>
+               <div className="text-xs font-bold text-gray-400 uppercase">{useI18n().t('inviteCode')}</div>
                <div className="font-mono font-bold text-lg tracking-widest text-secondary">{village.inviteCode}</div>
              </div>
              <div className="flex gap-2">
@@ -2217,7 +2219,7 @@ const TownHall = ({
                className="px-4 py-2 text-amber-600 bg-amber-50 rounded-lg font-medium hover:bg-amber-100 transition-colors flex items-center gap-2"
              >
                <Crown size={16} />
-               Transfer
+               {useI18n().t('transfer')}
              </button>
            </div>
          </div>
@@ -2234,8 +2236,8 @@ const TownHall = ({
                 <Crown size={24} className="text-amber-600" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800">Transfer Ownership</h3>
-                <p className="text-sm text-gray-500">Select a member to become the new chief</p>
+                <h3 className="font-bold text-gray-800">{useI18n().t('transferOwnership')}</h3>
+                <p className="text-sm text-gray-500">{useI18n().t('transferHint')}</p>
               </div>
             </div>
           </div>
@@ -3840,4 +3842,4 @@ const App = () => {
 const container = document.getElementById('root')!;
 const root = (container as any)._reactRoot || createRoot(container);
 (container as any)._reactRoot = root;
-root.render(<App />);
+root.render(<I18nProvider><App /></I18nProvider>);

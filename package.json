@@ -1,12 +1,12 @@
 {
-  "name": "global-village",
+  "name": "secondplanet",
   "private": true,
   "version": "0.0.0",
   "packageManager": "pnpm@9.0.0",
   "scripts": {
     "dev": "turbo dev",
-    "dev:web": "turbo dev --filter=@gv/web",
-    "dev:server": "turbo dev --filter=@gv/server",
+    "dev:web": "turbo dev --filter=@secondplanet/web",
+    "dev:server": "turbo dev --filter=@secondplanet/server",
     "build": "turbo build",
     "lint": "turbo lint",
     "db:generate": "turbo db:generate",

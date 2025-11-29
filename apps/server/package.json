@@ -1,5 +1,5 @@
 {
-  "name": "@gv/server",
+  "name": "@secondplanet/server",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -19,7 +19,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
-    "@gv/core": "workspace:*",
+    "@secondplanet/core": "workspace:*",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.0.0",
     "@nestjs/core": "^10.0.0",
