@@ -1383,11 +1383,12 @@ const MobileHeader = ({
     onProfileClick: () => void 
 }) => {
     return (
-        <div className="lg:hidden fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 h-14 z-[60] flex items-center justify-between px-4 shadow-sm">
+        <div className="lg:hidden fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 pt-safe z-[60] shadow-sm">
+          <div className="h-14 flex items-center justify-between px-4">
             <button onClick={onMenuClick} className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full">
                 <Menu size={24} />
             </button>
-            <button 
+            <button
                 onClick={onMenuClick}
                 className="flex items-center gap-2 font-bold text-gray-800 px-3 py-1.5 rounded-full hover:bg-gray-100 transition-all active:scale-95 transform border border-transparent hover:border-gray-200"
             >
@@ -1398,6 +1399,7 @@ const MobileHeader = ({
             <button onClick={onProfileClick} className="p-2 -mr-2 text-gray-600 hover:bg-gray-100 rounded-full">
                 <User size={24} />
             </button>
+          </div>
         </div>
     );
 }
@@ -1412,17 +1414,19 @@ const MobileBottomNav = ({ activeTab, onTabChange }: { activeTab: string, onTabC
   ];
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 pb-safe pt-2 z-[60] flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 px-2 mobile-bottom-nav pt-2 z-[60] flex justify-around items-center shadow-[0_-4px_12px_-1px_rgba(0,0,0,0.1)]">
       {tabs.map(tab => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`flex flex-col items-center gap-1 p-2 min-w-[64px] rounded-xl transition-colors ${
-            activeTab === tab.id ? 'text-primary bg-primary/5' : 'text-gray-400 hover:text-gray-600'
+          className={`flex flex-col items-center gap-0.5 py-1.5 px-3 min-w-[60px] rounded-xl transition-all duration-200 ${
+            activeTab === tab.id
+              ? 'text-primary bg-primary/10 scale-105'
+              : 'text-gray-400 hover:text-gray-600 active:scale-95'
           }`}
         >
-          <tab.icon size={20} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
-          <span className="text-[10px] font-medium">{tab.label}</span>
+          <tab.icon size={22} strokeWidth={activeTab === tab.id ? 2.5 : 1.8} />
+          <span className="text-[10px] font-semibold">{tab.label}</span>
         </button>
       ))}
     </div>
@@ -1453,7 +1457,7 @@ const VillageSwitcherDrawer = ({
   return (
     <div className="fixed inset-0 z-[70] lg:hidden">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-      <div className="absolute top-0 left-0 bottom-0 w-[280px] bg-secondary text-white shadow-2xl animate-slide-right flex flex-col">
+      <div className="absolute top-0 left-0 bottom-0 w-[280px] bg-secondary text-white shadow-2xl animate-slide-right flex flex-col pt-safe">
         <div className="p-6 flex-1 overflow-hidden flex flex-col">
           <h2 className="text-xl font-bold flex items-center gap-2 mb-6">
             <Globe className="text-primary" /> {useI18n().t('appName')}
@@ -1943,7 +1947,7 @@ const HomeView = ({
     : visibleVillages.filter(v => v.category === filter);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 lg:px-8 py-8 lg:py-12 pb-24 lg:pb-12">
+    <div className="w-full max-w-5xl mx-auto px-4 lg:px-8 py-6 lg:py-12 pb-8 lg:pb-12">
       <div className="mb-8 animate-fade-in">
         <h1 className="text-3xl font-bold text-secondary mb-2">Explore the World</h1>
         <p className="text-gray-500">Find your tribe among {visibleVillages.length} active communities.</p>
@@ -2443,7 +2447,7 @@ const VillageView = ({
   }, [events, eventFilter]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-sand lg:pl-20 pt-14 lg:pt-0">
+    <div className="flex flex-col min-h-screen bg-sand lg:pl-20 pt-mobile-header lg:pt-0">
       {/* Scrollable Container */}
       <div className="flex-1">
         {/* Cover Image Header - Scrolls away on mobile */}
@@ -2483,7 +2487,7 @@ const VillageView = ({
         </div>
 
         {/* Content Container */}
-        <div className="max-w-5xl mx-auto w-full px-4 lg:px-8 pb-24 lg:pb-12">
+        <div className="max-w-5xl mx-auto w-full px-4 lg:px-8 pb-mobile-nav lg:pb-12">
             
             {/* Desktop Tabs (Sticky) */}
             <div className="hidden lg:flex sticky top-0 z-40 bg-sand/95 backdrop-blur-md border-b border-gray-200 mb-6 pt-4">
@@ -3752,7 +3756,7 @@ const App = () => {
             <MobileBottomNav activeTab={activeTab} onTabChange={setActiveTab} />
           </>
         ) : (
-          <div className="lg:pl-20 min-h-screen pt-14 lg:pt-0">
+          <div className="lg:pl-20 min-h-screen pt-mobile-header lg:pt-0">
             <HomeView 
               onJoinVillage={handleSelectVillage} 
               villages={villages}

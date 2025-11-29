@@ -79,7 +79,38 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-/* Safe Area Utility */
+/* Safe Area Utilities */
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Mobile Bottom Nav Safe Area */
+.mobile-bottom-nav {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+}
+
+/* Content padding to account for fixed mobile nav */
+.pb-mobile-nav {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Fix for mobile viewport height */
+@supports (height: 100dvh) {
+  .min-h-screen-safe {
+    min-height: 100dvh;
+  }
+}
+
+/* Prevent content from being hidden behind fixed elements */
+.safe-bottom {
+  margin-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Content padding to account for fixed mobile header with safe area */
+.pt-mobile-header {
+  padding-top: calc(56px + env(safe-area-inset-top, 0px));
 }
