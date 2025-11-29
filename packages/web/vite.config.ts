@@ -15,6 +15,10 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    build: {
+      outDir: path.resolve(__dirname, '../../dist'),
+      emptyDir: true,
+    },
     plugins: [react()],
     define: {
       'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
