@@ -2,7 +2,7 @@
   "version": 2,
   "buildCommand": "pnpm install && cd apps/server && npx prisma generate && cd ../../packages/web && pnpm build",
   "outputDirectory": "packages/web/dist",
-  "installCommand": "npm install -g pnpm && pnpm install",
+  "installCommand": "npm install -g pnpm@9.0.0 && pnpm install",
   "framework": null,
   "builds": [
     {
