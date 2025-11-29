@@ -1,21 +1,10 @@
 {
   "version": 2,
-  "installCommand": "npm install -g pnpm@9.0.0 && pnpm install --no-frozen-lockfile",
-  "buildCommand": "cd apps/server && npx prisma generate && cd ../.. && pnpm --filter @secondplanet/web build",
+  "installCommand": "npm install -g pnpm@9.0.0 && pnpm install --no-frozen-lockfile --prod=false",
+  "buildCommand": "pnpm run build:web",
   "outputDirectory": "packages/web/dist",
   "framework": null,
-  "functions": {
-    "api/index.ts": {
-      "maxDuration": 30,
-      "memory": 1024,
-      "includeFiles": "{apps/server/src/**,apps/server/prisma/**,packages/core/**}"
-    }
-  },
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.ts"
-    },
     {
       "handle": "filesystem"
     },

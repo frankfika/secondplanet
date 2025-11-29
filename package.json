@@ -8,6 +8,7 @@
     "dev:web": "turbo dev --filter=@secondplanet/web",
     "dev:server": "turbo dev --filter=@secondplanet/server",
     "build": "turbo build",
+    "build:web": "turbo build --filter=@secondplanet/web",
     "lint": "turbo lint",
     "db:generate": "turbo db:generate",
     "db:push": "turbo db:push"
