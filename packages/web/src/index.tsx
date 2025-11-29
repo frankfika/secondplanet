@@ -598,7 +598,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClose, onR
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={onClose}>
       <div className="bg-white w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         {/* Cover Image */}
         <div className="h-48 relative">
@@ -1172,7 +1172,7 @@ const PassportModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-[#1a1b2e] w-full max-w-md rounded-2xl overflow-hidden shadow-2xl relative text-white border border-white/10 flex flex-col max-h-[90vh]">
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white z-10">
           <X size={24} />
@@ -1784,7 +1784,7 @@ const CreateVillageModal = ({ isOpen, onClose, onCreate }: { isOpen: boolean, on
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl relative">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
@@ -2226,7 +2226,7 @@ const TownHall = ({
 
     {/* Transfer Ownership Modal */}
     {showTransferModal && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowTransferModal(false)}>
+      <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowTransferModal(false)}>
         <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
           <div className="p-6 border-b bg-amber-50">
             <div className="flex items-center gap-3">
@@ -2441,7 +2441,7 @@ const VillageView = ({
   }, [events, eventFilter]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-sand lg:pl-20">
+    <div className="flex flex-col min-h-screen bg-sand lg:pl-20 pt-14 lg:pt-0">
       {/* Scrollable Container */}
       <div className="flex-1">
         {/* Cover Image Header - Scrolls away on mobile */}
@@ -2931,7 +2931,7 @@ const VillageView = ({
 
       {/* Create Event Modal */}
       {isCreateEventOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setIsCreateEventOpen(false)}>
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setIsCreateEventOpen(false)}>
           <div className="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="p-4 border-b flex justify-between items-center bg-gradient-to-r from-primary to-blue-600">
               <h3 className="font-bold text-lg text-white flex items-center gap-2">
@@ -3709,7 +3709,7 @@ const App = () => {
       />
 
       {/* Main Content Area */}
-      <main className="pt-14 lg:pt-0 min-h-screen">
+      <main className="min-h-screen">
         {activeVillageId && activeVillage ? (
           <>
             <VillageView
@@ -3741,7 +3741,7 @@ const App = () => {
             <MobileBottomNav activeTab={activeTab} onTabChange={setActiveTab} />
           </>
         ) : (
-          <div className="lg:pl-20 min-h-screen">
+          <div className="lg:pl-20 min-h-screen pt-14 lg:pt-0">
             <HomeView 
               onJoinVillage={handleSelectVillage} 
               villages={villages}
@@ -3763,7 +3763,7 @@ const App = () => {
 
       {/* Comments Modal */}
       {selectedPostForComment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedPostForComment(null)}>
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedPostForComment(null)}>
           <div className="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="p-4 border-b flex justify-between items-center">
               <h3 className="font-bold text-lg">Comments</h3>
