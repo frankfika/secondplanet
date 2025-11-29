@@ -2075,6 +2075,7 @@ const VillageView = ({
     onApproveEvent,
     onRejectEvent,
     onRsvpEvent,
+    onLoadEvents,
     userName
 }: {
     village: Village,
@@ -2096,6 +2097,7 @@ const VillageView = ({
     onApproveEvent: (eventId: string) => void,
     onRejectEvent: (eventId: string) => void,
     onRsvpEvent: (eventId: string, status: 'going' | 'interested' | 'not_going', registrationData?: { name: string; phone: string; note: string }) => void,
+    onLoadEvents: () => void,
     userName?: string
 }) => {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -2786,7 +2788,7 @@ const VillageView = ({
                     });
                     setIsCreateEventOpen(false);
                     setNewEvent({ title: '', description: '', type: 'Offline', location: '', date: '', time: '', coverImage: '' });
-                    // TODO: Reload events
+                    onLoadEvents(); // Reload events after creation
                     alert(isAdmin ? 'Event created successfully!' : 'Event submitted for approval!');
                   } catch (err) {
                     console.error('Failed to create event:', err);
@@ -3346,6 +3348,7 @@ const App = () => {
               onApproveEvent={handleApproveEvent}
               onRejectEvent={handleRejectEvent}
               onRsvpEvent={handleRsvpEvent}
+              onLoadEvents={loadEvents}
               userName={user?.name}
             />
             {/* Mobile Bottom Nav (Only inside a Village) */}
