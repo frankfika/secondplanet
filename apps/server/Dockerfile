@@ -13,6 +13,8 @@ COPY . .
 # Build server (and core if needed)
 RUN pnpm --filter @secondplanet/core build || true
 RUN pnpm --filter @secondplanet/server build
+# Generate Prisma Client for server workspace
+RUN pnpm --filter @secondplanet/server db:generate
 # Prepare deployable server folder with production deps
 RUN pnpm --filter @secondplanet/server --prod deploy /app
 
