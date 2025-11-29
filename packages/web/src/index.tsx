@@ -2025,15 +2025,47 @@ const TownHall = ({
   village,
   onUpdateVillage,
   isOwner,
-  onLeaveVillage
+  onLeaveVillage,
+  onTransferOwnership
 }: {
   village: Village,
   onUpdateVillage: (updates: Partial<Village>) => void,
   isOwner: boolean,
-  onLeaveVillage: () => void
+  onLeaveVillage: () => void,
+  onTransferOwnership: (newOwnerId: string) => Promise<void>
 }) => {
   const [isEditingAnnouncement, setIsEditingAnnouncement] = useState(false);
   const [announcementText, setAnnouncementText] = useState(village.announcement || '');
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [members, setMembers] = useState<any[]>([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+  const [isTransferring, setIsTransferring] = useState(false);
+
+  const loadMembers = async () => {
+    setIsLoadingMembers(true);
+    try {
+      const result = await membershipService.getMembers(village.id);
+      // Filter out the current owner (chief)
+      setMembers(result.items.filter(m => m.role !== 'chief'));
+    } catch (err) {
+      console.error('Failed to load members:', err);
+    } finally {
+      setIsLoadingMembers(false);
+    }
+  };
+
+  const handleTransfer = async (newOwnerId: string) => {
+    setIsTransferring(true);
+    try {
+      await onTransferOwnership(newOwnerId);
+      setShowTransferModal(false);
+    } catch (err) {
+      console.error('Transfer failed:', err);
+      alert('Failed to transfer ownership');
+    } finally {
+      setIsTransferring(false);
+    }
+  };
 
   const togglePrivacy = () => {
      const newPrivacy = !village.isPrivate;
@@ -2169,8 +2201,95 @@ const TownHall = ({
              </div>
            </div>
          )}
+
+         {/* Transfer Ownership Section */}
+         <div className="mt-4 pt-4 border-t border-gray-100">
+           <div className="flex items-center justify-between">
+             <div>
+               <div className="font-medium text-gray-800">Transfer Ownership</div>
+               <div className="text-xs text-gray-500">Hand over chief role to another member</div>
+             </div>
+             <button
+               onClick={() => {
+                 setShowTransferModal(true);
+                 loadMembers();
+               }}
+               className="px-4 py-2 text-amber-600 bg-amber-50 rounded-lg font-medium hover:bg-amber-100 transition-colors flex items-center gap-2"
+             >
+               <Crown size={16} />
+               Transfer
+             </button>
+           </div>
+         </div>
       </div>
     ) : null}
+
+    {/* Transfer Ownership Modal */}
+    {showTransferModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowTransferModal(false)}>
+        <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="p-6 border-b bg-amber-50">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                <Crown size={24} className="text-amber-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-800">Transfer Ownership</h3>
+                <p className="text-sm text-gray-500">Select a member to become the new chief</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 max-h-80 overflow-y-auto">
+            {isLoadingMembers ? (
+              <div className="py-8 flex justify-center">
+                <Loader2 size={32} className="animate-spin text-primary" />
+              </div>
+            ) : members.length === 0 ? (
+              <div className="py-8 text-center text-gray-500">
+                <Users size={40} className="mx-auto mb-2 text-gray-300" />
+                <p>No other members to transfer to</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {members.map(member => (
+                  <button
+                    key={member.user.id}
+                    onClick={() => {
+                      if (window.confirm(`Are you sure you want to transfer ownership to ${member.user.name}? You will become an Elder and they will become the Chief.`)) {
+                        handleTransfer(member.user.id);
+                      }
+                    }}
+                    disabled={isTransferring}
+                    className="w-full p-3 flex items-center gap-3 rounded-xl hover:bg-gray-50 transition-colors text-left disabled:opacity-50"
+                  >
+                    <img
+                      src={member.localAvatar || member.user.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop'}
+                      alt={member.user.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-800 truncate">{member.nickname || member.user.name}</p>
+                      <p className="text-xs text-gray-500 capitalize">{member.role}</p>
+                    </div>
+                    <Crown size={18} className="text-amber-400" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 border-t bg-gray-50">
+            <button
+              onClick={() => setShowTransferModal(false)}
+              className="w-full py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* Point Rules Configuration - Only for Chief */}
     {isOwner && (
@@ -2265,7 +2384,8 @@ const VillageView = ({
     onRsvpEvent,
     onLoadEvents,
     userName,
-    onLeaveVillage
+    onLeaveVillage,
+    onTransferOwnership
 }: {
     village: Village,
     activeTab: string,
@@ -2288,7 +2408,8 @@ const VillageView = ({
     onRsvpEvent: (eventId: string, status: 'going' | 'interested' | 'not_going', registrationData?: { name: string; phone: string; note: string }) => void,
     onLoadEvents: () => void,
     userName?: string,
-    onLeaveVillage: () => void
+    onLeaveVillage: () => void,
+    onTransferOwnership: (newOwnerId: string) => Promise<void>
 }) => {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
@@ -2644,6 +2765,7 @@ const VillageView = ({
                   onUpdateVillage={onUpdateVillage}
                   isOwner={isChief}
                   onLeaveVillage={onLeaveVillage}
+                  onTransferOwnership={onTransferOwnership}
                 />
               )}
 
@@ -3255,6 +3377,31 @@ const App = () => {
     }
   };
 
+  // Handle transfer ownership
+  const handleTransferOwnership = async (newOwnerId: string) => {
+    if (!activeVillageId) return;
+
+    try {
+      await villageService.transferOwnership(activeVillageId, newOwnerId);
+      // Update local role to elder (since we transferred ownership)
+      setUserProfile(prev => ({
+        ...prev,
+        local: {
+          ...prev.local,
+          [activeVillageId]: {
+            ...prev.local[activeVillageId],
+            role: 'elder'
+          }
+        }
+      }));
+      // Refresh villages list
+      loadVillages();
+    } catch (err: any) {
+      console.error('Failed to transfer ownership:', err);
+      throw err; // Re-throw so the modal can show error
+    }
+  };
+
   // Determine current role based on active village
   const currentUserRole = activeVillageId
     ? (userProfile.local[activeVillageId]?.role || 'Villager')
@@ -3412,10 +3559,37 @@ const App = () => {
      isAuthenticated && (v.id === activeVillageId || !v.isPrivate)
   );
 
-  const handleSelectVillage = (id: string) => {
+  const handleSelectVillage = async (id: string) => {
     setActiveVillageId(id);
     setActiveTab('square'); // Reset tab on switch
     window.scrollTo(0,0);
+
+    // Fetch user's membership role for this village
+    if (user?.id) {
+      try {
+        const membership = await membershipService.getMember(id, user.id);
+        setUserProfile(prev => ({
+          ...prev,
+          local: {
+            ...prev.local,
+            [id]: {
+              role: membership.role,
+              nickname: membership.nickname,
+              avatar: membership.localAvatar
+            }
+          }
+        }));
+      } catch (err) {
+        // User might not be a member yet, set default role
+        setUserProfile(prev => ({
+          ...prev,
+          local: {
+            ...prev.local,
+            [id]: { role: 'villager' }
+          }
+        }));
+      }
+    }
   };
 
   const handleUpdateVillage = (id: string, updates: Partial<Village>) => {
@@ -3561,6 +3735,7 @@ const App = () => {
               onLoadEvents={loadEvents}
               userName={user?.name}
               onLeaveVillage={handleLeaveVillage}
+              onTransferOwnership={handleTransferOwnership}
             />
             {/* Mobile Bottom Nav (Only inside a Village) */}
             <MobileBottomNav activeTab={activeTab} onTabChange={setActiveTab} />

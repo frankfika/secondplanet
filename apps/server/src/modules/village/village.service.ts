@@ -261,6 +261,55 @@ export class VillageService {
     };
   }
 
+  async transferOwnership(villageId: string, currentOwnerId: string, newOwnerId: string) {
+    const village = await this.findById(villageId);
+
+    // Only the current owner can transfer ownership
+    if (village.ownerId !== currentOwnerId) {
+      throw new ForbiddenException('Only the owner can transfer ownership');
+    }
+
+    // Check if new owner is a member
+    const newOwnerMembership = await this.prisma.membership.findUnique({
+      where: { userId_villageId: { userId: newOwnerId, villageId } },
+    });
+
+    if (!newOwnerMembership) {
+      throw new BadRequestException('New owner must be a member of the village');
+    }
+
+    // Can't transfer to yourself
+    if (currentOwnerId === newOwnerId) {
+      throw new BadRequestException('Cannot transfer ownership to yourself');
+    }
+
+    // Get the current owner's membership
+    const currentOwnerMembership = await this.prisma.membership.findUnique({
+      where: { userId_villageId: { userId: currentOwnerId, villageId } },
+    });
+
+    // Perform the transfer in a transaction
+    await this.prisma.$transaction([
+      // Update village owner
+      this.prisma.village.update({
+        where: { id: villageId },
+        data: { ownerId: newOwnerId },
+      }),
+      // Demote current owner to elder
+      this.prisma.membership.update({
+        where: { id: currentOwnerMembership!.id },
+        data: { role: 'elder' },
+      }),
+      // Promote new owner to chief
+      this.prisma.membership.update({
+        where: { id: newOwnerMembership.id },
+        data: { role: 'chief' },
+      }),
+    ]);
+
+    return { success: true, newOwnerId };
+  }
+
   private generateSlug(name: string): string {
     return name
       .toLowerCase()

@@ -72,3 +72,8 @@ export class JoinVillageDto {
   @IsOptional()
   inviteCode?: string;
 }
+
+export class TransferOwnershipDto {
+  @IsString()
+  newOwnerId: string;
+}

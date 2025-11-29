@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { VillageService } from './village.service';
-import { CreateVillageDto, UpdateVillageDto, JoinVillageDto } from './dto/village.dto';
+import { CreateVillageDto, UpdateVillageDto, JoinVillageDto, TransferOwnershipDto } from './dto/village.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -86,5 +86,16 @@ export class VillageController {
   async getStats(@Param('id') id: string) {
     const stats = await this.villageService.getStats(id);
     return { success: true, data: stats };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/transfer-ownership')
+  async transferOwnership(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+    @Body() dto: TransferOwnershipDto,
+  ) {
+    const result = await this.villageService.transferOwnership(id, userId, dto.newOwnerId);
+    return { success: true, data: result };
   }
 }

@@ -93,4 +93,9 @@ export const villageService = {
     const response = await api.get<ApiResponse<Village[]>>('/users/me/villages');
     return response.data.data;
   },
+
+  async transferOwnership(id: string, newOwnerId: string): Promise<{ success: boolean; newOwnerId: string }> {
+    const response = await api.post<ApiResponse<{ success: boolean; newOwnerId: string }>>(`/villages/${id}/transfer-ownership`, { newOwnerId });
+    return response.data.data;
+  },
 };
