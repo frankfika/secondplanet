@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "(pnpm dlx prisma generate --schema=apps/server/prisma/schema.prisma || pnpm dlx prisma generate --schema=../apps/server/prisma/schema.prisma) && pnpm --filter @secondplanet/web build",
+  "buildCommand": "pnpm --filter @secondplanet/server db:generate && pnpm --filter @secondplanet/web build",
   "outputDirectory": "packages/web/dist",
   "installCommand": "npm install -g pnpm@9.0.0 && pnpm install --no-frozen-lockfile --prod=false",
   "framework": null,
