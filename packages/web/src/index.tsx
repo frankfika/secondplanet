@@ -278,7 +278,11 @@ const VILLAGE_EVENTS: VillageEvent[] = [
     location: 'Voice Channel 1',
     type: 'Online',
     image: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80',
-    organizer: 'Alex Chen',
+    organizer: {
+      name: 'Alex Chen',
+      role: 'Chief',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'
+    },
     attendees: 24
   },
   {
@@ -289,7 +293,11 @@ const VILLAGE_EVENTS: VillageEvent[] = [
     location: 'Central Plaza',
     type: 'Offline',
     image: 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=800&q=80',
-    organizer: 'Sarah Jones',
+    organizer: {
+      name: 'Sarah Jones',
+      role: 'Elder',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80'
+    },
     attendees: 12
   }
 ];
@@ -872,12 +880,12 @@ const ContactCardModal: React.FC<{ member: Member | null, onClose: () => void }>
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={onClose}>
       <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl transform transition-all" onClick={e => e.stopPropagation()}>
-        <div className="h-24 bg-gradient-to-r from-primary to-primary/60 relative">
-          <button onClick={onClose} className="absolute top-2 right-2 p-1 bg-black/20 text-white rounded-full hover:bg-black/30">
+        <div className="h-24 bg-gradient-to-r from-primary to-primary/60 relative z-0">
+          <button onClick={onClose} className="absolute top-2 right-2 p-1 bg-black/20 text-white rounded-full hover:bg-black/30 z-20">
             <X size={20} />
           </button>
         </div>
-        <div className="px-6 pb-6 -mt-12 text-center">
+        <div className="px-6 pb-6 -mt-12 text-center relative z-10">
           <img src={member.avatar} className="w-24 h-24 rounded-full border-4 border-white shadow-md mx-auto mb-3 object-cover" />
           <h2 className="text-xl font-bold text-gray-800">{member.name}</h2>
           <p className="text-primary font-medium text-sm mb-1">{member.role}</p>
@@ -3442,5 +3450,7 @@ const App = () => {
   );
 };
 
-const root = createRoot(document.getElementById('root')!);
+const container = document.getElementById('root')!;
+const root = (container as any)._reactRoot || createRoot(container);
+(container as any)._reactRoot = root;
 root.render(<App />);
