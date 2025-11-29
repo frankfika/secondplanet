@@ -41,6 +41,7 @@ export class VillageService {
     return {
       ...village,
       constitution: JSON.parse(village.constitution),
+      pointRules: JSON.parse(village.pointRules),
     };
   }
 
@@ -56,6 +57,7 @@ export class VillageService {
     return {
       ...village,
       constitution: JSON.parse(village.constitution),
+      pointRules: JSON.parse(village.pointRules),
     };
   }
 
@@ -129,10 +131,13 @@ export class VillageService {
       inviteCode = this.generateInviteCode();
     }
 
-    // Prepare update data, converting constitution array to JSON string
+    // Prepare update data, converting arrays/objects to JSON strings
     const updateData: any = { ...dto, inviteCode };
     if (dto.constitution) {
       updateData.constitution = JSON.stringify(dto.constitution);
+    }
+    if (dto.pointRules) {
+      updateData.pointRules = JSON.stringify(dto.pointRules);
     }
 
     const updated = await this.prisma.village.update({
@@ -143,6 +148,7 @@ export class VillageService {
     return {
       ...updated,
       constitution: JSON.parse(updated.constitution),
+      pointRules: JSON.parse(updated.pointRules),
     };
   }
 

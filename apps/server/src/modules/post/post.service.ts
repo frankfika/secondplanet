@@ -142,6 +142,14 @@ export class PostService {
       throw new ForbiddenException('You must be a member to post');
     }
 
+    // Get village point rules
+    const village = await this.prisma.village.findUnique({
+      where: { id: villageId },
+      select: { pointRules: true },
+    });
+    const pointRules = JSON.parse(village?.pointRules || '{}');
+    const postPoints = pointRules.post || 0;
+
     const post = await this.prisma.post.create({
       data: {
         villageId,
@@ -161,6 +169,14 @@ export class PostService {
       },
     });
 
+    // Award points for posting
+    if (postPoints > 0) {
+      await this.prisma.membership.update({
+        where: { id: membership.id },
+        data: { balance: { increment: postPoints } },
+      });
+    }
+
     return {
       ...post,
       images: JSON.parse(post.images),
@@ -172,6 +188,7 @@ export class PostService {
         role: membership.role,
       },
       isLiked: false,
+      pointsEarned: postPoints,
     };
   }
 
@@ -220,6 +237,14 @@ export class PostService {
       return { liked: true };
     }
 
+    // Get village point rules for like_received
+    const village = await this.prisma.village.findUnique({
+      where: { id: post.villageId },
+      select: { pointRules: true },
+    });
+    const pointRules = JSON.parse(village?.pointRules || '{}');
+    const likePoints = pointRules.like_received || 0;
+
     await this.prisma.$transaction([
       this.prisma.like.create({
         data: { postId, userId },
@@ -228,6 +253,15 @@ export class PostService {
         where: { id: postId },
         data: { likeCount: { increment: 1 } },
       }),
+      // Award points to post author for receiving a like
+      ...(likePoints > 0 && post.authorId !== userId
+        ? [
+            this.prisma.membership.updateMany({
+              where: { userId: post.authorId, villageId: post.villageId },
+              data: { balance: { increment: likePoints } },
+            }),
+          ]
+        : []),
     ]);
 
     return { liked: true };
@@ -364,6 +398,14 @@ export class PostService {
       throw new ForbiddenException('You must be a member to comment');
     }
 
+    // Get village point rules
+    const village = await this.prisma.village.findUnique({
+      where: { id: post.villageId },
+      select: { pointRules: true },
+    });
+    const pointRules = JSON.parse(village?.pointRules || '{}');
+    const commentPoints = pointRules.comment || 0;
+
     const [comment] = await this.prisma.$transaction([
       this.prisma.comment.create({
         data: {
@@ -388,6 +430,14 @@ export class PostService {
       }),
     ]);
 
+    // Award points for commenting
+    if (commentPoints > 0) {
+      await this.prisma.membership.update({
+        where: { id: membership.id },
+        data: { balance: { increment: commentPoints } },
+      });
+    }
+
     return {
       ...comment,
       author: {
@@ -396,6 +446,7 @@ export class PostService {
         avatar: membership.localAvatar || comment.author.avatar,
         role: membership.role,
       },
+      pointsEarned: commentPoints,
     };
   }
 }

@@ -48,6 +48,7 @@ import {
   AlertCircle,
   Loader2,
   Crown,
+  Award,
   Shield,
   MapPin,
   CheckCircle,
@@ -74,6 +75,12 @@ interface Village {
   isPrivate: boolean; // Hidden/Secret
   inviteCode?: string; // Code required if private
   isSemiPrivate?: boolean; // Request to join
+  pointRules?: {
+    post: number;
+    comment: number;
+    rsvp: number;
+    like_received: number;
+  };
 }
 
 interface Post {
@@ -343,6 +350,7 @@ const EventCard: React.FC<{
   onClick?: () => void;
 }> = ({ event, isAdmin, onApprove, onReject, onRsvp, onClick }) => {
   const [isRsvping, setIsRsvping] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
   const isOfficialEvent = event.organizer?.role?.toLowerCase() === 'chief' || event.organizer?.role?.toLowerCase() === 'elder';
   const isPending = event.status === 'pending';
   const myRsvp = (event as any).myRsvp;
@@ -354,6 +362,34 @@ const EventCard: React.FC<{
       await onRsvp?.(event.id, status);
     } finally {
       setIsRsvping(false);
+    }
+  };
+
+  const handleQuickShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    const shareData = {
+      title: event.title,
+      text: `🎉 ${event.title}\n📅 ${event.date} ${event.time}\n📍 ${event.location}\n\nJoin us!`,
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        const shareText = `${shareData.text}\n\n${shareData.url}`;
+        await navigator.clipboard.writeText(shareText);
+        setShareSuccess(true);
+        setTimeout(() => setShareSuccess(false), 2000);
+      }
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        const shareText = `${shareData.text}\n\n${shareData.url}`;
+        await navigator.clipboard.writeText(shareText);
+        setShareSuccess(true);
+        setTimeout(() => setShareSuccess(false), 2000);
+      }
     }
   };
 
@@ -406,20 +442,31 @@ const EventCard: React.FC<{
       </div>
       {/* Attendee count and Admin actions */}
       <div className="flex items-center justify-between mb-3">
-        <div className="text-xs text-gray-500">
-          <span className="font-semibold text-primary">{event.attendees}</span> attending
+        <div className="flex items-center gap-3">
+          <div className="text-xs text-gray-500">
+            <span className="font-semibold text-primary">{event.attendees}</span> attending
+          </div>
+          {!isPending && (
+            <button
+              onClick={handleQuickShare}
+              className="p-1.5 bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 hover:text-primary transition-colors"
+              title={shareSuccess ? 'Copied!' : 'Share event'}
+            >
+              {shareSuccess ? <CheckCircle size={14} className="text-green-600" /> : <Share2 size={14} />}
+            </button>
+          )}
         </div>
         {isPending && isAdmin && (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => onApprove?.(event.id)}
+              onClick={(e) => { e.stopPropagation(); onApprove?.(event.id); }}
               className="p-1.5 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors"
               title="Approve"
             >
               <CheckCircle size={16} />
             </button>
             <button
-              onClick={() => onReject?.(event.id)}
+              onClick={(e) => { e.stopPropagation(); onReject?.(event.id); }}
               className="p-1.5 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
               title="Reject"
             >
@@ -473,6 +520,39 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClose, onR
   const [attendees, setAttendees] = useState<any[]>([]);
   const [isLoadingAttendees, setIsLoadingAttendees] = useState(false);
   const [canSeeDetails, setCanSeeDetails] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
+
+  const handleShare = async () => {
+    if (!event) return;
+
+    const shareData = {
+      title: event.title,
+      text: `🎉 ${event.title}\n📅 ${event.date} ${event.time}\n📍 ${event.location}\n\nJoin us for this exciting event!`,
+      url: window.location.href
+    };
+
+    try {
+      // Try native Web Share API first (works great on mobile)
+      if (navigator.share && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        const shareText = `${shareData.text}\n\n${shareData.url}`;
+        await navigator.clipboard.writeText(shareText);
+        setShareSuccess(true);
+        setTimeout(() => setShareSuccess(false), 2000);
+      }
+    } catch (err) {
+      // User cancelled or error
+      if ((err as Error).name !== 'AbortError') {
+        // Fallback to clipboard
+        const shareText = `${shareData.text}\n\n${shareData.url}`;
+        await navigator.clipboard.writeText(shareText);
+        setShareSuccess(true);
+        setTimeout(() => setShareSuccess(false), 2000);
+      }
+    }
+  };
 
   useEffect(() => {
     if (userProfile?.name) {
@@ -523,9 +603,23 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClose, onR
         {/* Cover Image */}
         <div className="h-48 relative">
           <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
-          <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70">
-            <X size={20} />
-          </button>
+          <div className="absolute top-4 right-4 flex gap-2">
+            <button
+              onClick={handleShare}
+              className="p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors relative"
+              title="Share event"
+            >
+              {shareSuccess ? <CheckCircle size={20} className="text-green-400" /> : <Share2 size={20} />}
+              {shareSuccess && (
+                <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs bg-black/80 text-white px-2 py-1 rounded whitespace-nowrap">
+                  Copied!
+                </span>
+              )}
+            </button>
+            <button onClick={onClose} className="p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors">
+              <X size={20} />
+            </button>
+          </div>
           <div className="absolute bottom-4 left-4 flex gap-2">
             <div className="bg-black/60 text-white text-sm px-3 py-1 rounded-full flex items-center gap-1.5 backdrop-blur-sm">
               {event.type === 'Online' ? <Video size={14} /> : <MapPin size={14} />}
@@ -767,6 +861,29 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClose, onR
               </button>
             </div>
           )}
+
+          {/* Share Section */}
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <button
+              onClick={handleShare}
+              className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+            >
+              {shareSuccess ? (
+                <>
+                  <CheckCircle size={18} className="text-green-600" />
+                  <span className="text-green-600">Link Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Share2 size={18} />
+                  <span>Share Event</span>
+                </>
+              )}
+            </button>
+            <p className="text-xs text-gray-400 text-center mt-2">
+              Share this event with friends or post to your group chat
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -1904,14 +2021,16 @@ const HomeView = ({
 
 // --- Village Components ---
 
-const TownHall = ({ 
+const TownHall = ({
   village,
   onUpdateVillage,
-  isOwner
-}: { 
+  isOwner,
+  onLeaveVillage
+}: {
   village: Village,
   onUpdateVillage: (updates: Partial<Village>) => void,
-  isOwner: boolean
+  isOwner: boolean,
+  onLeaveVillage: () => void
 }) => {
   const [isEditingAnnouncement, setIsEditingAnnouncement] = useState(false);
   const [announcementText, setAnnouncementText] = useState(village.announcement || '');
@@ -2051,11 +2170,72 @@ const TownHall = ({
            </div>
          )}
       </div>
-    ) : (
-      <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 text-center">
-         <AlertCircle size={32} className="text-gray-400 mx-auto mb-2" />
-         <h3 className="text-gray-600 font-bold mb-1">Restricted Area</h3>
-         <p className="text-gray-400 text-sm">Only the Village Chief can access administrative settings.</p>
+    ) : null}
+
+    {/* Point Rules Configuration - Only for Chief */}
+    {isOwner && (
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <Award size={20} className="text-yellow-500" /> {village.currencyName} Rules
+        </h3>
+        <p className="text-gray-500 text-sm mb-4">Set how many {village.currencyName} members earn for each action</p>
+
+        <div className="space-y-3">
+          {[
+            { key: 'post', label: 'Create a Post', icon: '📝' },
+            { key: 'comment', label: 'Leave a Comment', icon: '💬' },
+            { key: 'rsvp', label: 'RSVP to Event', icon: '📅' },
+            { key: 'like_received', label: 'Receive a Like', icon: '❤️' },
+          ].map((rule) => (
+            <div key={rule.key} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">{rule.icon}</span>
+                <span className="text-gray-700 font-medium">{rule.label}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={(village as any).pointRules?.[rule.key] ?? 0}
+                  onChange={(e) => {
+                    const newRules = { ...(village as any).pointRules, [rule.key]: parseInt(e.target.value) || 0 };
+                    onUpdateVillage({ pointRules: newRules } as any);
+                  }}
+                  className="w-16 px-2 py-1 text-center font-mono font-bold text-lg border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+                <span className="text-yellow-600 font-bold">{village.currencySymbol}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {!isOwner && (
+      <div className="space-y-4">
+        <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 text-center">
+           <AlertCircle size={32} className="text-gray-400 mx-auto mb-2" />
+           <h3 className="text-gray-600 font-bold mb-1">Restricted Area</h3>
+           <p className="text-gray-400 text-sm">Only the Village Chief can access administrative settings.</p>
+        </div>
+
+        {/* Leave Village Section */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <LogOut size={20} className="text-red-500" /> Membership
+          </h3>
+          <p className="text-gray-500 text-sm mb-4">
+            If you no longer wish to be part of this village, you can leave at any time. You will lose access to all village content and your earned {village.currencyName}.
+          </p>
+          <button
+            onClick={onLeaveVillage}
+            className="w-full py-3 border-2 border-red-200 text-red-600 rounded-xl font-bold hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
+          >
+            <LogOut size={18} />
+            Leave Village
+          </button>
+        </div>
       </div>
     )}
   </div>
@@ -2084,7 +2264,8 @@ const VillageView = ({
     onRejectEvent,
     onRsvpEvent,
     onLoadEvents,
-    userName
+    userName,
+    onLeaveVillage
 }: {
     village: Village,
     activeTab: string,
@@ -2106,7 +2287,8 @@ const VillageView = ({
     onRejectEvent: (eventId: string) => void,
     onRsvpEvent: (eventId: string, status: 'going' | 'interested' | 'not_going', registrationData?: { name: string; phone: string; note: string }) => void,
     onLoadEvents: () => void,
-    userName?: string
+    userName?: string,
+    onLeaveVillage: () => void
 }) => {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
@@ -2461,6 +2643,7 @@ const VillageView = ({
                   village={village}
                   onUpdateVillage={onUpdateVillage}
                   isOwner={isChief}
+                  onLeaveVillage={onLeaveVillage}
                 />
               )}
 
@@ -3053,6 +3236,25 @@ const App = () => {
     }
   };
 
+  // Handle leave village
+  const handleLeaveVillage = async () => {
+    if (!activeVillageId) return;
+
+    const confirmed = window.confirm('Are you sure you want to leave this village? This action cannot be undone.');
+    if (!confirmed) return;
+
+    try {
+      await villageService.leave(activeVillageId);
+      // Navigate back to village list
+      setActiveVillageId(null);
+      // Refresh villages list
+      loadVillages();
+    } catch (err: any) {
+      console.error('Failed to leave village:', err);
+      alert(err.response?.data?.message || 'Failed to leave village');
+    }
+  };
+
   // Determine current role based on active village
   const currentUserRole = activeVillageId
     ? (userProfile.local[activeVillageId]?.role || 'Villager')
@@ -3358,6 +3560,7 @@ const App = () => {
               onRsvpEvent={handleRsvpEvent}
               onLoadEvents={loadEvents}
               userName={user?.name}
+              onLeaveVillage={handleLeaveVillage}
             />
             {/* Mobile Bottom Nav (Only inside a Village) */}
             <MobileBottomNav activeTab={activeTab} onTabChange={setActiveTab} />

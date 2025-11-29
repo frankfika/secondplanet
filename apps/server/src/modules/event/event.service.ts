@@ -272,6 +272,14 @@ export class EventService {
       throw new ForbiddenException('You must be a member to RSVP');
     }
 
+    // Get village point rules
+    const village = await this.prisma.village.findUnique({
+      where: { id: event.villageId },
+      select: { pointRules: true },
+    });
+    const pointRules = JSON.parse(village?.pointRules || '{}');
+    const rsvpPoints = pointRules.rsvp || 0;
+
     const existingRsvp = await this.prisma.eventRsvp.findUnique({
       where: { eventId_userId: { eventId, userId } },
     });
@@ -327,9 +335,17 @@ export class EventService {
             ]
           : []),
       ]);
+
+      // Award points for first RSVP (going or interested)
+      if (rsvpPoints > 0) {
+        await this.prisma.membership.update({
+          where: { id: membership.id },
+          data: { balance: { increment: rsvpPoints } },
+        });
+      }
     }
 
-    return { status: dto.status };
+    return { status: dto.status, pointsEarned: existingRsvp ? 0 : rsvpPoints };
   }
 
   async getAttendees(eventId: string, userId?: string, page = 1, pageSize = 20) {

@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsIn, IsArray } from 'class-validator';
+import { IsString, IsOptional, IsIn, IsArray, IsObject } from 'class-validator';
 
 export class CreateVillageDto {
   @IsString()
@@ -56,6 +56,15 @@ export class UpdateVillageDto {
   @IsString({ each: true })
   @IsOptional()
   constitution?: string[];
+
+  @IsObject()
+  @IsOptional()
+  pointRules?: {
+    post?: number;
+    comment?: number;
+    rsvp?: number;
+    like_received?: number;
+  };
 }
 
 export class JoinVillageDto {

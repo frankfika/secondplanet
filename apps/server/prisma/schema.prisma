@@ -64,6 +64,9 @@ model Village {
   // Rules (JSON array stored as string)
   constitution  String   @default("[]")
 
+  // Point Rules (JSON: {"post": 5, "comment": 1, "rsvp": 10, "like_received": 1})
+  pointRules    String   @default("{\"post\": 5, \"comment\": 1, \"rsvp\": 10, \"like_received\": 1}")
+
   // Stats
   memberCount   Int      @default(0)
 
