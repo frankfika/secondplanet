@@ -3568,26 +3568,35 @@ const App = () => {
     if (user?.id) {
       try {
         const membership = await membershipService.getMember(id, user.id);
-        setUserProfile(prev => ({
-          ...prev,
-          local: {
-            ...prev.local,
-            [id]: {
-              role: membership.role,
-              nickname: membership.nickname,
-              avatar: membership.localAvatar
-            }
-          }
-        }));
+        handleUpdateLocalProfile(id, {
+          nickname: membership.nickname || userProfile.global.name,
+          bio: membership.bio || 'New Villager',
+          role: membership.role,
+          avatar: membership.localAvatar,
+          joinedAt: membership.joinedAt
+            ? new Date(membership.joinedAt).toISOString().split('T')[0]
+            : new Date().toISOString().split('T')[0],
+          privacy: membership.privacy || {
+            showEmail: true,
+            showPhone: false,
+            showLocation: true,
+            showSocials: true,
+          },
+        });
       } catch (err) {
         // User might not be a member yet, set default role
-        setUserProfile(prev => ({
-          ...prev,
-          local: {
-            ...prev.local,
-            [id]: { role: 'villager' }
-          }
-        }));
+        handleUpdateLocalProfile(id, {
+          nickname: userProfile.global.name,
+          bio: 'New Villager',
+          role: 'villager',
+          joinedAt: new Date().toISOString().split('T')[0],
+          privacy: {
+            showEmail: true,
+            showPhone: false,
+            showLocation: true,
+            showSocials: true,
+          },
+        });
       }
     }
   };
