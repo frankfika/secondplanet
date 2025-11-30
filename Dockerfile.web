@@ -10,7 +10,7 @@ RUN pnpm --filter @secondplanet/core build || true
 RUN pnpm --filter @secondplanet/web run build
 
 FROM nginx:alpine
-COPY --from=builder /src/packages/web/dist /usr/share/nginx/html
+COPY --from=builder /src/dist /usr/share/nginx/html
 
 # Create nginx config with API proxy
 RUN echo 'server { \
