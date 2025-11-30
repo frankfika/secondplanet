@@ -18,11 +18,10 @@ services:
       retries: 10
 
   server:
-    image: node:20-alpine
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
     container_name: secondplanet-server
-    working_dir: /workspace
-    volumes:
-      - ./:/workspace
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/secondplanet?schema=public
       JWT_SECRET: dev-secret
@@ -30,28 +29,25 @@ services:
       JWT_REFRESH_SECRET: dev-refresh-secret
       JWT_REFRESH_EXPIRES_IN: 30d
       PORT: '3000'
-      NODE_ENV: development
-      CORS_ORIGIN: http://localhost:5173,http://localhost:5174
-    command: sh -c "corepack enable && corepack prepare pnpm@9 --activate && pnpm install && pnpm --filter @secondplanet/server exec prisma generate && pnpm --filter @secondplanet/server run dev"
-    ports:
-      - '3000:3000'
+      NODE_ENV: production
+      CORS_ORIGIN: http://localhost:5173
     depends_on:
       postgres:
         condition: service_healthy
+    ports:
+      - '3000:3000'
 
   web:
-    image: node:20-alpine
+    build:
+      context: .
+      dockerfile: packages/web/Dockerfile
+      args:
+        - VITE_API_TARGET=http://server:3000
     container_name: secondplanet-web
-    working_dir: /workspace
-    volumes:
-      - ./:/workspace
-    environment:
-      VITE_API_TARGET: http://server:3000
-    command: sh -c "corepack enable && corepack prepare pnpm@9 --activate && pnpm install && pnpm --filter @secondplanet/web run dev"
-    ports:
-      - '5173:5173'
     depends_on:
       - server
+    ports:
+      - '5173:80'
 
 volumes:
   pgdata:
